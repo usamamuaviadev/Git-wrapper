@@ -1,0 +1,14 @@
+# Core dependencies
+openai>=1.0.0
+requests>=2.31.0
+pyyaml>=6.0
+
+# Utilities
+python-dotenv>=1.0.0
+
+# Future dependencies (uncomment when implementing features)
+# sentence-transformers>=2.2.0  # For memory/embeddings
+# chromadb>=0.4.0               # Vector database for memory
+# elevenlabs>=0.2.0             # Voice synthesis
+# pillow>=10.0.0                # Image processing
+

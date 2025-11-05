@@ -1,0 +1,28 @@
+
+active_model: local  
+
+openai:
+  OPENAI_API_KEY: ${OPENAI_API_KEY}
+  model: "gpt-4o" 
+  temperature: 0.7
+  max_tokens: 1000
+
+local:
+  model_name: "mistral" 
+  host: "localhost"
+  port: 11434 
+  temperature: 0.7
+
+
+memory:
+  enabled: false
+  vector_store: "chroma" 
+
+voice:
+  enabled: false
+  provider: "elevenlabs" 
+
+image:
+  enabled: false
+  provider: "dalle" 
+
