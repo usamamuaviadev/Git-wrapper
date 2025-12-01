@@ -49,8 +49,27 @@ def query_openai(prompt: str, config: Dict[str, Any]) -> str:
             max_tokens=max_tokens
         )
         
-        return response.choices[0].message.content.strip()
+        if not response.choices or len(response.choices) == 0:
+            raise Exception("OpenAI API returned empty response")
+        
+        content = response.choices[0].message.content
+        if not content:
+            raise Exception("OpenAI API returned empty content")
+        
+        return content.strip()
     
     except Exception as e:
-        raise Exception(f"OpenAI API error: {str(e)}")
+        error_msg = str(e)
+        if "api_key" in error_msg.lower() or "authentication" in error_msg.lower():
+            raise ValueError(
+                f"OpenAI API authentication failed: {error_msg}. "
+                "Please check your API key."
+            )
+        elif "rate limit" in error_msg.lower():
+            raise Exception(
+                f"OpenAI API rate limit exceeded: {error_msg}. "
+                "Please wait a moment and try again."
+            )
+        else:
+            raise Exception(f"OpenAI API error: {error_msg}")
 

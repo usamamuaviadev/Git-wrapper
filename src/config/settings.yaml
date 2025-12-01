@@ -1,8 +1,7 @@
-
 active_model: local  
 
 openai:
-  OPENAI_API_KEY: ${OPENAI_API_KEY}
+  api_key: ""  # Leave empty to use OPENAI_API_KEY env var
   model: "gpt-4o" 
   temperature: 0.7
   max_tokens: 1000
@@ -13,16 +12,38 @@ local:
   port: 11434 
   temperature: 0.7
 
-
 memory:
   enabled: false
-  vector_store: "chroma" 
+  mode: "session"  # session or vector
+  max_history: 10  # Number of previous turns to load as context
+  storage_path: "data/sessions"  # Directory to store session files
+  vector_store: "chroma"  # chroma or pinecone (future)
+  embedding_model: "all-MiniLM-L6-v2"  # Sentence transformer model
 
 voice:
   enabled: false
-  provider: "elevenlabs" 
+  provider: "openai"  # openai or elevenlabs (future)
+  tts_model: "tts-1"  # tts-1 or tts-1-hd
+  tts_voice: "alloy"  # alloy, echo, fable, onyx, nova, shimmer
+  stt_model: "whisper-1"  # Speech-to-text model
+  output_dir: "data/voice_output"
+  api_key: ""  # Leave empty to use OPENAI_API_KEY env var
 
 image:
   enabled: false
-  provider: "dalle" 
+  provider: "dalle"  # dalle or stable-diffusion (future)
+  model: "dall-e-3"  # dall-e-2 or dall-e-3
+  size: "1024x1024"  # 256x256, 512x512, 1024x1024
+  quality: "standard"  # standard or hd (dall-e-3 only)
+  n: 1  # Number of images (dall-e-2 only, max 10)
+  output_dir: "data/images"
+  api_key: ""  # Leave empty to use OPENAI_API_KEY env var
 
+api:
+  enabled: false
+  host: "0.0.0.0"
+  port: 8000
+
+web_ui:
+  enabled: false
+  port: 8501

@@ -1,22 +1,24 @@
 # 🤖 GPT Wrapper
 
-A modular Python wrapper for routing prompts between OpenAI API and local LLM models (via Ollama), with plans for memory, voice, and image generation integration.
+A comprehensive, production-ready Python wrapper for routing prompts between OpenAI API and local LLM models (via Ollama). Features session memory, vector-based semantic search, voice I/O, image generation, web UI, and REST API.
 
 ## 📋 Features
 
-### ✅ Current (Milestone 1)
+### ✅ Current Features (All Milestones Complete!)
 - **Multi-Model Routing**: Switch between OpenAI API and local Ollama models via configuration
+- **Session Memory**: Save conversation history to JSONL files with context loading
+- **Vector Memory**: Embedding-based semantic search with ChromaDB for intelligent context retrieval
+- **Interactive Chat Mode**: Continuous conversation with `/exit` or `/quit` support
+- **Voice Support**: Text-to-speech (TTS) and speech-to-text (STT) using OpenAI APIs
+- **Image Generation**: DALL-E 2 and DALL-E 3 integration for text-to-image generation
+- **Web UI**: Beautiful Streamlit interface for all features
+- **REST API**: FastAPI server with comprehensive endpoints
+- **CLI Interface**: Full-featured command-line with flags for all features
 - **Modular Architecture**: Clean separation of concerns for easy extension
-- **YAML Configuration**: Simple toggle between models without code changes
+- **YAML Configuration**: Simple toggle between models and features without code changes
 - **Comprehensive Logging**: Track all operations with detailed logs
 - **Error Handling**: Robust error management for API failures
-
-### 🚧 Planned (Future Milestones)
-- **Embedding-Based Memory**: Context-aware conversations using vector databases
-- **Voice Integration**: Text-to-speech and speech-to-text capabilities
-- **Image Generation**: DALL-E and other image generation providers
-- **Web UI**: User-friendly interface for interaction
-- **API Server**: RESTful API for integration with other applications
+- **Setup Validation**: Test all routes and features with detailed diagnostics
 
 ## 🏗️ Architecture
 
@@ -75,41 +77,110 @@ active_model: openai  # or 'local' for Ollama
 
 ### Running with OpenAI
 
-1. Make sure your OpenAI API key is set in `.env` or `src/config/settings.yaml`
-2. Run the wrapper:
+1. **Activate the virtual environment** (if not already activated):
 ```bash
-python src/main.py "What is the capital of France?"
+source venv/bin/activate  # On macOS/Linux
+# or
+venv\Scripts\activate  # On Windows
 ```
 
-Or use interactive mode:
+2. Make sure your OpenAI API key is set in `.env` or `src/config/settings.yaml`
+
+3. Run the wrapper:
 ```bash
-python src/main.py
-# Then enter your prompt when asked
+python src/main.py "What is the capital of France?"
+# Or use python3 if python is not available:
+python3 src/main.py "What is the capital of France?"
+```
+
+### Interactive Chat Mode
+
+Start an interactive conversation session:
+
+```bash
+# Basic interactive mode
+python src/main.py --interactive
+
+# With session memory (saves conversation history)
+python src/main.py --session-id my-chat --interactive
+
+# Exit interactive mode by typing /exit or /quit
+```
+
+### Session Memory
+
+Enable memory in `src/config/settings.yaml`:
+
+```yaml
+memory:
+  enabled: true
+  max_history: 10  # Number of previous turns to load as context
+  storage_path: "data/sessions"
+```
+
+Then use with a session ID:
+
+```bash
+# Single prompt with memory
+python src/main.py --session-id test "What is Python?"
+
+# Next prompt in same session (will have context)
+python src/main.py --session-id test "Tell me more about it"
 ```
 
 ### Running with Ollama (Local)
 
-1. Install Ollama from [ollama.ai](https://ollama.ai/)
+#### Installing Ollama on Ubuntu
 
-2. Pull a model (e.g., llama2):
+1. **Install Ollama using the official script:**
 ```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+2. **Verify installation:**
+```bash
+ollama --version
+```
+
+3. **Start Ollama service (runs automatically after install, but you can verify):**
+```bash
+sudo systemctl status ollama
+# If not running, start it with:
+sudo systemctl start ollama
+```
+
+4. **Pull a model (e.g., mistral or llama2):**
+```bash
+ollama pull mistral
+# or
 ollama pull llama2
 ```
 
-3. Start Ollama server:
+5. **Verify the model is available:**
 ```bash
-ollama serve
+ollama list
 ```
 
-4. Update `src/config/settings.yaml`:
+6. **Update `src/config/settings.yaml`:**
 ```yaml
 active_model: local
+local:
+  model_name: "mistral"  # or "llama2" or any model you pulled
 ```
 
-5. Run the wrapper:
+7. **Activate the virtual environment** (if not already activated):
+```bash
+source venv/bin/activate  # On macOS/Linux
+```
+
+8. **Run the wrapper:**
 ```bash
 python src/main.py "Explain quantum computing in simple terms"
+# Or use python3 if python is not available:
+python3 src/main.py "Explain quantum computing in simple terms"
 ```
+
+**Note:** On Ubuntu, Ollama runs as a system service, so you don't need to manually start `ollama serve`. The service runs automatically in the background.
 
 ## 📁 Project Structure
 
@@ -117,16 +188,26 @@ python src/main.py "Explain quantum computing in simple terms"
 gpt-wrapper/
 │
 ├── src/
-│   ├── main.py                 # Entry point
-│   ├── routers/
-│   │   ├── __init__.py
-│   │   ├── openai_router.py    # Routes to OpenAI API
-│   │   ├── local_router.py     # Routes to Ollama
-│   │   └── router_manager.py   # Model selection logic
+│   ├── main.py                 # CLI entry point
 │   │
-│   ├── memory/
-│   │   ├── __init__.py
-│   │   └── memory_handler.py   # Memory stub (future)
+│   ├── routers/                # Model routing
+│   │   ├── router_manager.py   # Model selection logic
+│   │   ├── openai_router.py    # OpenAI API integration
+│   │   └── local_router.py     # Ollama integration
+│   │
+│   ├── memory/                 # Memory system
+│   │   └── memory_handler.py   # Session + Vector memory
+│   │
+│   ├── voice/                  # Voice features
+│   │   └── voice_handler.py    # TTS/STT with OpenAI
+│   │
+│   ├── image/                  # Image generation
+│   │   └── image_handler.py    # DALL-E integration
+│   │
+│   ├── api/                    # Web services
+│   │   ├── api_server.py       # FastAPI REST server
+│   │   ├── web_ui.py           # Streamlit web interface
+│   │   └── server.py           # API server entry point
 │   │
 │   ├── config/
 │   │   └── settings.yaml       # Configuration file
@@ -134,11 +215,20 @@ gpt-wrapper/
 │   └── utils/
 │       └── logger.py           # Logging utility
 │
+├── data/                       # Generated data (gitignored)
+│   ├── sessions/               # Session memory files
+│   ├── images/                 # Generated images
+│   ├── voice_output/           # Audio files
+│   └── chroma_db/              # Vector database
+│
 ├── docs/
 │   └── system_overview.md      # Architecture documentation
 │
+├── run_api.sh                  # API server startup script
+├── run_web_ui.sh               # Web UI startup script
 ├── .env.example                # API key template
 ├── requirements.txt            # Python dependencies
+├── validate_setup.py           # Setup validation script
 ├── README.md                   # This file
 └── LICENSE                     # MIT License
 ```
@@ -165,16 +255,133 @@ local:
   temperature: 0.7              # 0.0 to 2.0
 ```
 
+**Memory Configuration:**
+```yaml
+memory:
+  enabled: false                # Enable session memory
+  mode: "session"               # session or vector
+  max_history: 10               # Number of previous turns to load
+  storage_path: "data/sessions" # Directory for session files
+  vector_store: "chroma"        # chroma or pinecone (future)
+  embedding_model: "all-MiniLM-L6-v2"  # Sentence transformer model
+```
+
+**Voice Configuration:**
+```yaml
+voice:
+  enabled: false                # Enable voice features
+  provider: "openai"            # openai or elevenlabs (future)
+  tts_model: "tts-1"            # tts-1 or tts-1-hd
+  tts_voice: "alloy"            # alloy, echo, fable, onyx, nova, shimmer
+  stt_model: "whisper-1"        # Speech-to-text model
+  output_dir: "data/voice_output"
+```
+
+**Image Configuration:**
+```yaml
+image:
+  enabled: false                # Enable image generation
+  provider: "dalle"             # dalle or stable-diffusion (future)
+  model: "dall-e-3"             # dall-e-2 or dall-e-3
+  size: "1024x1024"             # 256x256, 512x512, 1024x1024
+  quality: "standard"           # standard or hd (dall-e-3 only)
+  output_dir: "data/images"
+```
+
+**API Server Configuration:**
+```yaml
+api:
+  enabled: false
+  host: "0.0.0.0"
+  port: 8000
+```
+
+**Web UI Configuration:**
+```yaml
+web_ui:
+  enabled: false
+  port: 8501
+```
+
 ## 🧪 Usage Examples
 
 ### Command Line
 
 ```bash
-# Single prompt
-python src/main.py "Write a haiku about coding"
+# Activate virtual environment first
+source venv/bin/activate
 
-# Interactive mode
-python src/main.py
+# Single-shot mode (one prompt)
+python src/main.py "Write a haiku about coding"
+# Or: python3 src/main.py "Write a haiku about coding"
+
+# Interactive chat mode
+python src/main.py --interactive
+
+# Interactive mode with session memory
+python src/main.py --session-id my-session --interactive
+
+# Single prompt with session memory
+python src/main.py --session-id my-session "What is machine learning?"
+python src/main.py --session-id my-session "Tell me more about it"  # Has context!
+```
+
+### Interactive Mode Commands
+
+Once in interactive mode, you can:
+- Type your message and press Enter
+- Type `/exit` or `/quit` to end the session
+- Press `Ctrl+C` to interrupt and exit
+
+### Image Generation
+
+```bash
+# Enable image generation in settings.yaml first (image.enabled: true)
+python src/main.py --image "A beautiful sunset over mountains"
+
+# Images are saved to data/images/ directory
+```
+
+### Voice Features
+
+```bash
+# Text-to-speech (enable voice in settings.yaml first)
+python src/main.py --tts "Hello, this is a test"
+
+# Speech-to-text (transcribe an audio file)
+python src/main.py --stt audio.wav
+```
+
+### Web UI
+
+```bash
+# Start the Streamlit web interface
+./run_web_ui.sh
+# Or manually:
+streamlit run src/api/web_ui.py --server.port 8501
+
+# Open http://localhost:8501 in your browser
+# Features: Chat, image generation, voice playback, session management
+```
+
+### REST API Server
+
+```bash
+# Start the FastAPI server
+./run_api.sh
+# Or manually:
+python src/api/server.py
+
+# API documentation available at http://localhost:8000/docs
+# Test with curl:
+curl -X POST "http://localhost:8000/api/chat" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Hello!", "session_id": "test"}'
+
+# Generate image via API:
+curl -X POST "http://localhost:8000/api/image/generate" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "A beautiful landscape"}'
 ```
 
 ### Python Script
@@ -183,8 +390,58 @@ python src/main.py
 from src.routers.router_manager import route_prompt
 
 prompt = "Explain the theory of relativity"
-response = route_prompt(prompt)
+response, model_name = route_prompt(prompt)
 print(response)
+```
+
+## 🧪 Smoke Tests
+
+Quick verification tests to ensure both routes are working correctly:
+
+### Test 1: OpenAI Route
+
+```bash
+# Activate virtual environment (if not already active)
+source venv/bin/activate
+
+# Set active model to OpenAI
+sed -i '' 's/active_model:.*/active_model: openai/' src/config/settings.yaml  # macOS
+# or on Linux: sed -i 's/active_model:.*/active_model: openai/' src/config/settings.yaml
+
+# Run test prompt
+python src/main.py "Say 'OpenAI route working' if you can read this"
+
+# Expected: Response from OpenAI API confirming it received the message
+```
+
+### Test 2: Ollama Route
+
+```bash
+# Activate virtual environment (if not already active)
+source venv/bin/activate
+
+# Ensure Ollama is running and has a model
+ollama list
+
+# Set active model to local
+sed -i '' 's/active_model:.*/active_model: local/' src/config/settings.yaml  # macOS
+# or on Linux: sed -i 's/active_model:.*/active_model: local/' src/config/settings.yaml
+
+# Run test prompt
+python src/main.py "Say 'Ollama route working' if you can read this"
+
+# Expected: Response from local Ollama model confirming it received the message
+```
+
+**Quick Toggle Script:**
+```bash
+# Switch to OpenAI (macOS)
+sed -i '' 's/active_model:.*/active_model: openai/' src/config/settings.yaml && echo "Switched to OpenAI"
+# On Linux: sed -i 's/active_model:.*/active_model: openai/' src/config/settings.yaml && echo "Switched to OpenAI"
+
+# Switch to Ollama (macOS)
+sed -i '' 's/active_model:.*/active_model: local/' src/config/settings.yaml && echo "Switched to Ollama"
+# On Linux: sed -i 's/active_model:.*/active_model: local/' src/config/settings.yaml && echo "Switched to Ollama"
 ```
 
 ## 🔧 Troubleshooting
@@ -203,10 +460,13 @@ print(response)
 ## 🗺️ Roadmap
 
 - [x] **Milestone 1**: Core routing between OpenAI and Ollama
-- [ ] **Milestone 2**: Embedding-based memory system
-- [ ] **Milestone 3**: Voice input/output integration
-- [ ] **Milestone 4**: Image generation capabilities
-- [ ] **Milestone 5**: Web interface and API server
+- [x] **Milestone 1.5**: Session memory and interactive chat mode
+- [x] **Milestone 2**: Vector-based embedding memory system (ChromaDB + sentence-transformers)
+- [x] **Milestone 3**: Voice input/output integration (OpenAI Whisper + TTS)
+- [x] **Milestone 4**: Image generation capabilities (DALL-E integration)
+- [x] **Milestone 5**: Web interface (Streamlit) and API server (FastAPI)
+
+All milestones are now complete! 🎉
 
 ## 🤝 Contributing
 
